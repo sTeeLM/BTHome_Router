@@ -1,3 +1,11 @@
 idf_component_register(SRCS "nm.c"
                     INCLUDE_DIRS "include"
-                    REQUIRES "logger")
+                    REQUIRES "logger"
+                    REQUIRES "esp_wifi"
+                    REQUIRES "bt"
+                    REQUIRES "esp_event" 
+                    REQUIRES "esp_http_server"
+                    REQUIRES "esp_http_client"
+                    REQUIRES "esp_netif"
+                    REQUIRES "lwip"
+                    REQUIRES "bthome_parser")

@@ -9,23 +9,23 @@
 #include "terminal.h"
 #include "cjson_wrapper.h"
 #include "bthome_parser.h"
+#include "blm.h"
 
 void app_main(void)
 {
   logger_init();
+  nvs_wrapper_init();
   delay_init();
+  config_init();
   cjson_wrapper_init(); 
   bthome_parser_init(); 
   ws2812b_init();
-  config_init();
-  nvs_wrapper_init();
+  blm_init();
   nm_init();
   terminal_init();
 
   ws2812b_set_background(0, 0, 255);
   ws2812b_refresh();
-
-  
 
   while(1) {
     terminal_run();

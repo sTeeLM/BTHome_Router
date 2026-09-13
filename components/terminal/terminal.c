@@ -12,6 +12,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "terminal_do_net.h"
+#include "terminal_do_bl.h"
 
 static const char *TAG = "TERMINAL";
 
@@ -28,29 +30,28 @@ static int do_exit_cmd(int argc, char **argv)
   return 0;
 }
 
-static int do_hello_cmd(int argc, char **argv) 
-{
-  BTR_LOGI(TAG, "Hello from ESP32-C3 Shell!");
-  return 0;
-}
-
-static void terminal_register_commands(void)
-{
-  esp_console_cmd_t exit_cmd = {.command = "exit",
+static const esp_console_cmd_t terminal_cmd_exit = {.command = "exit",
                                 .help = "Exit the interactive shell",
                                 .hint = NULL,
                                 .func = &do_exit_cmd,
                                 .argtable = NULL};
-  ESP_ERROR_CHECK(esp_console_cmd_register(&exit_cmd));
 
-  esp_console_cmd_t hello_cmd = {.command = "hello",
-                                 .help = "Print hello message",
-                                 .hint = NULL,
-                                 .func = &do_hello_cmd,
-                                 .argtable = NULL};
-  ESP_ERROR_CHECK(esp_console_cmd_register(&hello_cmd));
+static const esp_console_cmd_t * terminal_commands[] = {
+   &terminal_cmd_exit,
+   &terminal_cmd_net,
+   &terminal_cmd_bl,
+   NULL
+};
 
-  // 也可以注册系统自带的 help 命令
+static void terminal_register_commands(void)
+{
+  uint8_t index = 0;
+
+  for (index = 0; terminal_commands[index] != NULL; index++) {
+    BTR_LOGD(TAG, "Registering command: %s", terminal_commands[index]->command);
+    ESP_ERROR_CHECK(esp_console_cmd_register(terminal_commands[index]));
+  }
+  // 注册系统自带的 help 命令
   esp_console_register_help_command();
 }
 
@@ -61,19 +62,26 @@ void terminal_init(void)
   terminal_repl = NULL; // 初始化 repl 指针为 NULL
 }
 
+void terminal_printf(const char *format, ...) 
+{
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
+}
+
 void terminal_run_interactive_shell(void) 
 {
   BTR_LOGI(TAG, "terminal_run_interactive_shell");
   esp_console_repl_config_t repl_config = ESP_CONSOLE_REPL_CONFIG_DEFAULT();
   esp_console_dev_uart_config_t hw_config = ESP_CONSOLE_DEV_UART_CONFIG_DEFAULT();
 
-  repl_config.prompt = "BTHOME_ROUTER>";
+  repl_config.prompt = "BTR>";
   repl_config.max_cmdline_length = 256;
   repl_config.max_cmdline_args = 8;
 
   ESP_ERROR_CHECK(esp_console_new_repl_uart(&hw_config, &repl_config, &terminal_repl));
   terminal_register_commands();
-  esp_console_register_help_command();
   ESP_ERROR_CHECK(esp_console_start_repl(terminal_repl));
 }
 

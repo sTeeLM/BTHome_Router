@@ -1,4 +1,4 @@
-idf_component_register(SRCS "terminal.c"
+idf_component_register(SRCS "terminal.c" "terminal_do_net.c" "terminal_do_bl.c"
                     INCLUDE_DIRS "include"
                     REQUIRES "logger"
                     REQUIRES "console"
